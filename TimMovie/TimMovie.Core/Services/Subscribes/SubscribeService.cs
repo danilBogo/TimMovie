@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using Autofac;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using TimMovie.Core.DTO.Subscribes;
 using TimMovie.Core.Entities;
@@ -9,7 +7,6 @@ using TimMovie.Core.Query;
 using TimMovie.Core.Specifications.InheritedSpecifications;
 using TimMovie.Core.Specifications.InheritedSpecifications.SubscribeSpec;
 using TimMovie.Core.Specifications.StaticSpecification;
-using TimMovie.SharedKernel.Classes;
 using TimMovie.SharedKernel.Interfaces;
 
 namespace TimMovie.Core.Services.Subscribes;
@@ -40,8 +37,10 @@ public class SubscribeService : ISubscribeService
     /// <returns></returns>
     public IEnumerable<SubscribeDto> GetSubscribesByNamePart(string? namePart, int take = int.MaxValue, int skip = 0)
     {
+        if (skip < 0 || take < 0)
+            return new List<SubscribeDto>();
         var query = _subscribesRepository.Query
-            .Where(new UserSubscribeByNamePartSpec(namePart))
+            .Where(new UserSubscribeByNamePartSpec(namePart) && SubscribeSpec.ActiveSubscribe)
             .Skip(skip)
             .Take(take);
         var subscribes = new QueryExecutor<Subscribe>(query, _subscribesRepository)
@@ -54,7 +53,7 @@ public class SubscribeService : ISubscribeService
     public IEnumerable<UserSubscribeDto> GetAllActiveUserSubscribes(Guid? userId)
     {
         var query = _userSubscribeRepository.Query
-            .Where(new UserSubscribeByUserIdSpec(userId) && SubscribeSpec.ActiveSubscribe);
+            .Where(new UserSubscribeByUserIdSpec(userId) && SubscribeSpec.ActiveUserSubscribe);
         var subscribes = new QueryExecutor<UserSubscribe>(query, _userSubscribeRepository)
             .IncludeInResult(subscribe => subscribe.Subscribe)
             .GetEntities();
@@ -91,7 +90,7 @@ public class SubscribeService : ISubscribeService
     {
         var query = _userSubscribeRepository.Query
             .Where(new UserSubscribeByUserIdSpec(user.Id) && new UserSubscribesBySubscribeIdSpec(subscribe.Id) &&
-                   SubscribeSpec.ActiveSubscribe);
+                   SubscribeSpec.ActiveUserSubscribe);
 
         if (query.Any())
         {
