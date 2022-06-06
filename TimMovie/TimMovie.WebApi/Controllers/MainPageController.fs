@@ -98,7 +98,16 @@ type MainPageController
             [<FromForm>] take: int,
             [<FromForm>] skip: int
         ) =
-        subscribeService.GetSubscribesByNamePart(namePart, take, skip)
+        if take < 0 || skip < 0 then
+            ContentResult(Content = "skip and take must be non-negative", StatusCode = 400)
+        else
+            let subscribes =
+                subscribeService.GetSubscribesByNamePart(namePart, take, skip)
+
+            let json =
+                JsonConvert.SerializeObject(subscribes, Formatting.Indented)
+
+            ContentResult(Content = json, StatusCode = 200)
 
     [<HttpPost>]
     [<AllowAnonymous>]
@@ -116,24 +125,34 @@ type MainPageController
             [<FromForm>] amountTake: int
         ) =
 
-        let selectedFilmFiltersDto =
-            SelectedFilmFiltersDto(
-                SortingType = filmSortingType,
-                GenresName = genresName,
-                CountriesName = countriesName,
-                Rating = rating,
-                AnnualPeriod = AnnualPeriodDto(firstYear, lastYear),
-                IsDescending = isDescending
-            )
+        if amountSkip < 0 || amountTake < 0 then
+            ContentResult(Content = "skip and take must be non-negative", StatusCode = 400)
+        else
+            let selectedFilmFiltersDto =
+                SelectedFilmFiltersDto(
+                    SortingType = filmSortingType,
+                    GenresName = genresName,
+                    CountriesName = countriesName,
+                    Rating = rating,
+                    AnnualPeriod = AnnualPeriodDto(firstYear, lastYear),
+                    IsDescending = isDescending
+                )
 
-        let generalPaginationDto =
-            GeneralPaginationDto<SelectedFilmFiltersDto>(
-                DataDto = selectedFilmFiltersDto,
-                AmountSkip = amountSkip,
-                AmountTake = amountTake
-            )
+            let generalPaginationDto =
+                GeneralPaginationDto<SelectedFilmFiltersDto>(
+                    DataDto = selectedFilmFiltersDto,
+                    AmountSkip = amountSkip,
+                    AmountTake = amountTake
+                )
 
-        filmCardService.GetFilmCardsByFilters(generalPaginationDto)
+            let films =
+                filmCardService.GetFilmCardsByFilters(generalPaginationDto)
+
+            let json =
+                JsonConvert.SerializeObject(films, Formatting.Indented)
+
+            ContentResult(Content = json, StatusCode = 200)
+
 
     [<HttpPost>]
     [<Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)>]
@@ -147,13 +166,16 @@ type MainPageController
                 this.jwtService.GetUserGuid(jwtTokenOption.Value)
 
             if userGuidOption.IsSome then
-                let films =
-                    watchLaterService.GetWatchLaterFilms(Guid(userGuidOption.Value.ToString()), take, skip)
+                if take < 0 || skip < 0 then
+                    ContentResult(Content = "skip and take must be non-negative", StatusCode = 400)
+                else
+                    let films =
+                        watchLaterService.GetWatchLaterFilms(Guid(userGuidOption.Value.ToString()), take, skip)
 
-                let json =
-                    JsonConvert.SerializeObject(films, Formatting.Indented)
+                    let json =
+                        JsonConvert.SerializeObject(films, Formatting.Indented)
 
-                ContentResult(Content = json, StatusCode = 200)
+                    ContentResult(Content = json, StatusCode = 200)
             else
                 ContentResult(Content = "Error occurred while decoding the jwt token", StatusCode = 400)
         else

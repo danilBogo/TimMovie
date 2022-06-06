@@ -145,8 +145,8 @@ public class FilmCardService
     
     public Result<IEnumerable<FilmCardDto>> GetFilmRecommendationsByUserId(Guid userId, int amount)
     {
-        if (amount < 0)
-            return Result.Fail<IEnumerable<FilmCardDto>>("значение не может быть отрицательным");
+        if (amount <= 0)
+            return Result.Fail<IEnumerable<FilmCardDto>>("amount must be non-negative");
         var query = _userFilmWatchedRepository.Query
             .Where(new WatchedFilmByUserIdSpec(userId))
             .OrderByDescending(watched => watched.Grade ?? 0);
@@ -160,7 +160,7 @@ public class FilmCardService
                 .FirstOrDefault();
         if (bestGradedFilm == null)
         {
-            return Result.Fail<IEnumerable<FilmCardDto>>("у данного пользователя нет оцененных фильмов");
+            return Result.Fail<IEnumerable<FilmCardDto>>("user has no rated movies");
         }
 
         var producer = bestGradedFilm.Film.Producers.FirstOrDefault();
@@ -169,7 +169,7 @@ public class FilmCardService
 
         if (producer == null || actor == null)
         {
-            return Result.Fail<IEnumerable<FilmCardDto>>("у фильма с лучшим рейтингом нет продюссера/актеров");
+            return Result.Fail<IEnumerable<FilmCardDto>>("film with the best rating has no producers/actors");
         }
 
         var filmQuery = _filmRepository.Query
@@ -194,6 +194,6 @@ public class FilmCardService
             return Result.Ok<IEnumerable<FilmCardDto>>(result);
         }
 
-        return Result.Fail<IEnumerable<FilmCardDto>>("не найдены фильмы для рекомендации");
+        return Result.Fail<IEnumerable<FilmCardDto>>("no movies found for recommendation");
     }
 }

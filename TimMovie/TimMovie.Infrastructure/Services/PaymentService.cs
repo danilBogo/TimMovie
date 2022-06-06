@@ -33,7 +33,7 @@ public class PaymentService : IPaymentService
                 return true;
             else
             {
-                validationResult = new ValidationResult("срок годности вашей карты истек");
+                validationResult = new ValidationResult("your card has expired");
                 return false;
             }
 
@@ -45,14 +45,14 @@ public class PaymentService : IPaymentService
     {
         var userFromDb = await _userManager.FindByIdAsync(userId.ToString());
         if (userFromDb is null)
-            return Result.Fail("данного пользователя не существует");
+            return Result.Fail("user does not exist");
         var subscribeFromDb = _userSubscribeService.GetSubscribeById(subscribeId);
         if (subscribeFromDb is null)
-            return Result.Fail("данной подписки не существует");
+            return Result.Fail("subscription does not exist");
         if (!TryValidateCard(cardDto, out var validationResult))
             return Result.Fail(validationResult.ErrorMessage!);
         if (new Random().NextDouble() < 0.15)
-            return Result.Fail("банк отклонил вашу покупку");
+            return Result.Fail("bank rejected your purchase");
         await _userSubscribeService.AddUserToSubscribeAsync(userFromDb, subscribeFromDb);
         return Result.Ok();
     }

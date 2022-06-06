@@ -89,18 +89,18 @@ public class FilmService
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user is null)
-            return Result.Fail<CommentsDto>("данного пользователя не существует");
+            return Result.Fail<CommentsDto>("user does not exist");
         var dbFilm = GetDbFilmById(filmId);
         if (dbFilm is null)
-            return Result.Fail<CommentsDto>("данного фильма не существует");
+            return Result.Fail<CommentsDto>("film does not exist");
         if (content is null)
-            return Result.Fail<CommentsDto>("комментарий не может быть пустым");
+            return Result.Fail<CommentsDto>("comment cannot be empty");
         switch (content.Length)
         {
             case < 2:
-                return Result.Fail<CommentsDto>("комментарий слишком короткий");
+                return Result.Fail<CommentsDto>("comment is too short");
             case > 1000:
-                return Result.Fail<CommentsDto>("комментарий слишком длинный");
+                return Result.Fail<CommentsDto>("comment is too long");
         }
 
         var comment = new Comment
