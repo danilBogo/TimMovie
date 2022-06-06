@@ -6,7 +6,6 @@
 
     <ItemGroup>
         <Compile Include="Services\JwtService.fs" />
-        <Compile Include="Controllers\AccountController.fs" />
         <Compile Include="Controllers\MainPageController.fs" />
         <Compile Include="Controllers\ProfileController.fs" />
         <Compile Include="Controllers\FilmController.fs" />

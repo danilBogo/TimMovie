@@ -16,14 +16,14 @@ type DatabaseFillerSubscribes() =
             |> Async.AwaitTask
             |> Async.RunSynchronously
 
-        dbContext.Subscribes.Add(Subscribe(Name = "TestSubscribe", Price = 1, Description = "123"))
+        dbContext.Subscribes.Add(Subscribe(Name = "TestSubscribe", Price = 1, Description = "123", IsActive = true))
         |> ignore
 
-        dbContext.Subscribes.Add(Subscribe(Name = "TestSubscribe2", Price = 1, Description = "123"))
+        dbContext.Subscribes.Add(Subscribe(Name = "TestSubscribe2", Price = 1, Description = "123", IsActive = true))
         |> ignore
 
         dbContext.Subscribes.Add(
-            Subscribe(Id = Constants.DefaultSubscribeForPaymentGuid, Name = "SubscribeForPayment", Price = 228)
+            Subscribe(Id = Constants.DefaultSubscribeForPaymentGuid, Name = "SubscribeForPayment", Price = 228, IsActive = true)
         )
         |> ignore
 
